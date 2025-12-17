@@ -1,6 +1,6 @@
 // Fixed background image provided by the user (Used for Preview only)
 // Note: In Vercel/Vite deployments, files in the 'public' folder are served at the root '/'.
-export const FIXED_BACKGROUND_URL = "/images/image.png";
+export const FIXED_BACKGROUND_URL = "https://res.cloudinary.com/djmakoiji/image/upload/v1765986475/background-image_hm40vy.png";
 
 export const DEFAULT_COLOR = "#000000";
 
