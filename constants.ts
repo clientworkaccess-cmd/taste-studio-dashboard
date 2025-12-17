@@ -1,5 +1,6 @@
 // Fixed background image provided by the user (Used for Preview only)
-export const FIXED_BACKGROUND_URL = "./public/images/image.png";
+// Note: In Vercel/Vite deployments, files in the 'public' folder are served at the root '/'.
+export const FIXED_BACKGROUND_URL = "/images/image.png";
 
 export const DEFAULT_COLOR = "#000000";
 
