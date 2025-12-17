@@ -65,30 +65,71 @@ const fetchImageViaProxy = async (targetUrl: string): Promise<Blob> => {
   throw new Error("Failed to fetch image via proxies");
 };
 
+// Helper: Detect Social Media URLs and extract username
+const getSocialDetails = (url: URL) => {
+  const hostname = url.hostname.toLowerCase().replace(/^www\./, '');
+  const pathSegments = url.pathname.split('/').filter(p => p.length > 0);
+  
+  if (pathSegments.length === 0) return null;
+  
+  const username = pathSegments[0]; // Usually the first segment is the username
+
+  // Support for common platforms
+  if (hostname.includes('instagram.com')) return { provider: 'instagram', username };
+  if (hostname.includes('facebook.com')) return { provider: 'facebook', username };
+  if (hostname.includes('twitter.com') || hostname.includes('x.com')) return { provider: 'twitter', username };
+  if (hostname.includes('linkedin.com')) {
+    // linkedin.com/in/username or linkedin.com/company/name
+    if (pathSegments.length >= 2 && (pathSegments[0] === 'in' || pathSegments[0] === 'company')) {
+      return { provider: 'linkedin', username: pathSegments[1] };
+    }
+    return null;
+  }
+  if (hostname.includes('youtube.com')) {
+    // youtube.com/@username
+    if (username.startsWith('@')) return { provider: 'youtube', username: username.substring(1) };
+    return { provider: 'youtube', username };
+  }
+  if (hostname.includes('github.com')) return { provider: 'github', username };
+  
+  return null;
+};
+
 export const extractBrandAssets = async (inputUrl: string): Promise<BrandAssets> => {
+  let urlObj: URL;
   let hostname = "";
+  
   try {
     // 1. URL Cleanup
     let processedUrl = inputUrl.trim();
     if (!processedUrl.startsWith('http')) {
       processedUrl = `https://${processedUrl}`;
     }
-    const urlObj = new URL(processedUrl);
+    urlObj = new URL(processedUrl);
     hostname = urlObj.hostname.replace(/^www\./, '');
   } catch (e) {
     throw new Error("Please enter a valid URL (e.g., brand.com)");
   }
 
-  // 2. Define Logo Sources (Priority Order)
-  // Google is often most reliable for favicons/logos of modern tech sites like chatgpt.com
-  const sources = [
-    // High-res Google Favicon
-    `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${hostname}&size=256`,
-    // Clearbit Logo API
-    `https://logo.clearbit.com/${hostname}`,
-    // Icon Horse
-    `https://icon.horse/icon/${hostname}`
-  ];
+  // 2. Identify Source Type (Social vs Website)
+  const social = getSocialDetails(urlObj);
+  let sources: string[] = [];
+
+  if (social) {
+    // SOCIAL: Use Unavatar to get the specific profile picture
+    // We append ?fallback=false to ensure we get a 404 if the user doesn't exist, rather than a generated placeholder
+    sources = [
+      `https://unavatar.io/${social.provider}/${social.username}?fallback=false`,
+      `https://unavatar.io/${social.username}?fallback=false` // Fallback generic lookup
+    ];
+  } else {
+    // WEBSITE: Use Favicon/Logo extractors
+    sources = [
+      `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${hostname}&size=256`,
+      `https://logo.clearbit.com/${hostname}`,
+      `https://icon.horse/icon/${hostname}`
+    ];
+  }
 
   let bestBlob: Blob | null = null;
 
@@ -104,11 +145,13 @@ export const extractBrandAssets = async (inputUrl: string): Promise<BrandAssets>
   }
 
   if (!bestBlob) {
-    throw new Error(`Could not auto-detect a logo for ${hostname}. Please upload one manually.`);
+    const context = social ? `profile picture for ${social.username}` : `logo for ${hostname}`;
+    throw new Error(`Could not auto-detect a ${context}. Please upload one manually.`);
   }
 
   // 4. Create File & Extract Color
-  const file = new File([bestBlob], `${hostname}-logo.png`, { type: bestBlob.type });
+  const filename = social ? `${social.provider}-${social.username}.png` : `${hostname}-logo.png`;
+  const file = new File([bestBlob], filename, { type: bestBlob.type });
   const color = await getDominantColor(bestBlob);
 
   return { file, color };
