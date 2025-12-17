@@ -4,6 +4,7 @@ import { PreviewSection } from "./components/PreviewSection";
 import { InputMode, GeneratorState, NanoBananaPayload } from "./types";
 import { DEFAULT_COLOR } from "./constants";
 import { generateBrandedImage } from "./services/geminiService";
+import { extractBrandAssets } from "./services/brandExtraction";
 
 const App: React.FC = () => {
   const [state, setState] = useState<GeneratorState>({
@@ -25,17 +26,46 @@ const App: React.FC = () => {
     setState((prev) => ({ ...prev, isGenerating: true, error: null }));
 
     try {
-      const payload: NanoBananaPayload = {
+      let finalPayload: NanoBananaPayload = {
         mode: state.mode,
         color: state.color,
         url: state.mode === InputMode.WEBSITE ? state.websiteUrl : state.socialUrl
       };
 
-      if (state.mode === InputMode.UPLOAD && state.logoFile) {
-        payload.logo = state.logoFile;
+      // Scenario A: Manual Upload
+      if (state.mode === InputMode.UPLOAD) {
+        if (!state.logoFile) throw new Error("Please upload a logo file.");
+        finalPayload.logo = state.logoFile;
+      } 
+      // Scenario B: Website or Social - Extract Assets First
+      else {
+        const urlToAnalyze = state.mode === InputMode.WEBSITE ? state.websiteUrl : state.socialUrl;
+        
+        try {
+          const extracted = await extractBrandAssets(urlToAnalyze);
+          
+          // Use extracted assets
+          finalPayload.logo = extracted.file;
+          
+          // Only use extracted color if user hasn't manually changed it from default
+          if (state.color === DEFAULT_COLOR) {
+            finalPayload.color = extracted.color;
+            setState(prev => ({ ...prev, color: extracted.color }));
+          }
+        } catch (extractionError) {
+          // Fallback mechanism: If extraction fails, ask user to upload
+          console.warn("Auto-extraction failed:", extractionError);
+          setState(prev => ({ 
+            ...prev, 
+            mode: InputMode.UPLOAD, // Switch to upload mode
+            isGenerating: false,
+            error: "Could not auto-detect brand assets. Please upload your logo manually."
+          }));
+          return; // Stop execution
+        }
       }
 
-      const resultImage = await generateBrandedImage(payload);
+      const resultImage = await generateBrandedImage(finalPayload);
       
       setState((prev) => ({
         ...prev,

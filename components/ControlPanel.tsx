@@ -26,6 +26,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ state, onStateChange
     return false;
   };
 
+  const getButtonText = () => {
+    if (state.isGenerating) {
+      if (state.mode !== InputMode.UPLOAD) return "Analyzing & Rendering...";
+      return "Processing...";
+    }
+    return "Generate Asset";
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header / Branding */}
@@ -162,7 +170,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ state, onStateChange
           {state.isGenerating ? (
             <span className="flex items-center gap-2">
                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-               Processing...
+               {getButtonText()}
             </span>
           ) : "Generate Asset"}
         </Button>
