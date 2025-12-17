@@ -63,16 +63,16 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ state }) => {
              <img 
                src={state.generatedImageUrl} 
                alt="Generated Result" 
-               className="w-full h-full object-contain bg-checkers"
+               className="w-full h-full object-contain bg-slate-50"
              />
           ) : (
-             <div className="relative w-full h-full">
+             <div className="relative w-full h-full bg-slate-100">
                <img 
                  src={FIXED_BACKGROUND_URL} 
                  alt="Placeholder" 
-                 className="w-full h-full object-cover opacity-90"
+                 className="absolute inset-0 w-full h-full object-cover opacity-90"
                />
-               <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+               <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] z-10">
                  <div className="text-center text-white p-6">
                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-3 backdrop-blur-md border border-white/20">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><image x="0" y="0" width="24" height="24" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSIzIiB3aWR0aD0iMjAiIGhlaWdodD0iMTQiIHJ4PSIyIiByeT0iMiIvPjxsaW5lIHgxPSI4IiB5MT0iMjEiIHgyPSIxNiIgeTI9IjIxIi8+PGxpbmUgeDE9IjEyIiB5MT0iMTciIHgyPSIxMiIgeTI9IjIxIi8+PC9zdmc+" opacity="0.8" /></svg>
