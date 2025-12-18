@@ -106,24 +106,38 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ state, onStateChange
               
               <div className="space-y-2">
                 <Label htmlFor="color">Accent Color</Label>
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-3 items-center">
                   <div className="relative flex-1">
-                     <div className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border shadow-sm" style={{ backgroundColor: state.color }} />
+                     <div 
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border shadow-sm pointer-events-none" 
+                        style={{ backgroundColor: state.color }} 
+                     />
                      <Input 
                       type="text" 
                       value={state.color} 
                       onChange={(e) => onStateChange({ color: e.target.value })}
-                      className="font-mono pl-8"
+                      className="font-mono pl-9 h-10"
+                      placeholder="#000000"
                     />
                   </div>
-                  <div className="relative w-10 h-9 overflow-hidden rounded-md border shadow-sm">
-                    <Input 
+                  
+                  {/* Fixed Color Picker Box */}
+                  <div className="relative w-12 h-10 shrink-0 group">
+                    <input 
                       id="color" 
                       type="color" 
-                      className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] p-0 cursor-pointer border-0" 
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" 
                       value={state.color}
                       onChange={(e) => onStateChange({ color: e.target.value })}
                     />
+                    <div 
+                      className="absolute inset-0 rounded-md border shadow-sm transition-transform group-active:scale-95 z-10"
+                      style={{ backgroundColor: state.color }}
+                    />
+                    {/* Visual cue for color picker */}
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white border rounded-full flex items-center justify-center z-15 shadow-sm">
+                      <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                    </div>
                   </div>
                 </div>
               </div>
